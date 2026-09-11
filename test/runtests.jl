@@ -22,6 +22,7 @@ TEST_FILES = [
     "chaos.jl",
     "trendy.jl",
     "bugfixes.jl",
+    "tables.jl",  # loads Tables, so it must come last
 ]
 
 @inbounds for testfile in TEST_FILES
