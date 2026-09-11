@@ -3,10 +3,10 @@
 ## Example
 
 ```@example
-using Temporal, Indicators, Plots
-X = quandl("CHRIS/CME_CL1", rows=252, sort='d')
-x = cl(X)
-x.fields[1] = :Crude
+using Temporal, Indicators, Plots, Random
+Random.seed!(1)
+x = TS(100 .+ cumsum(randn(252)))
+x.fields[1] = :Price
 
 mafuns = [sma, ema, wma, trima]
 m = hcat([f(x, n=40) for f in mafuns]...)
@@ -22,5 +22,5 @@ savefig("ma_example.svg")  # hide
 
 ```@autodocs
 Modules = [Indicators]
-Pages = ["ma.jl", "run.jl"]
+Pages = ["ma.jl", "run.jl", "utils.jl"]
 ```

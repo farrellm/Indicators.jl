@@ -1,8 +1,6 @@
-[![Build Status](https://travis-ci.org/dysonance/Indicators.jl.svg?branch=master)](https://travis-ci.org/dysonance/Indicators.jl)
-[![Coverage Status](https://coveralls.io/repos/dysonance/Indicators.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/dysonance/Indicators.jl?branch=master)
-[![codecov.io](http://codecov.io/github/dysonance/Indicators.jl/coverage.svg?branch=master)](http://codecov.io/github/dysonance/Indicators.jl?branch=master)
-
-[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://dysonance.github.io/Indicators.jl/latest)
+[![Build Status](https://github.com/farrellm/Indicators.jl/actions/workflows/CI.yml/badge.svg?branch=master)](https://github.com/farrellm/Indicators.jl/actions/workflows/CI.yml?query=branch%3Amaster)
+[![Coverage](https://codecov.io/gh/farrellm/Indicators.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/farrellm/Indicators.jl)
+[![Dev Docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://farrellm.github.io/Indicators.jl/dev/)
 
 # Indicators
 
@@ -101,14 +99,14 @@ Indicators is a [Julia](https://julialang.org) package offering efficient implem
 
 # Examples
 #### Randomly generated data:
-![alt text](https://raw.githubusercontent.com/dysonance/Indicators.jl/master/examples/example1.png "Example 1")
+![alt text](examples/example1.png "Example 1")
 
 #### Apple (AAPL) daily data from 2015:
-![alt text](https://raw.githubusercontent.com/dysonance/Indicators.jl/master/examples/example2.png "Example 2")
+![alt text](examples/example2.png "Example 2")
 
 #### Corn futures daily data
-![alt text](https://raw.githubusercontent.com/dysonance/Indicators.jl/master/examples/example3.png "Example 3")
+![alt text](examples/example3.png "Example 3")
 
 #### Gold Futures Moving Regression
-![alt text](https://raw.githubusercontent.com/dysonance/Indicators.jl/master/examples/example4.png "Example 4")
+![alt text](examples/example4.png "Example 4")
 
