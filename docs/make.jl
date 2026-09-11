@@ -5,6 +5,7 @@ makedocs(
     sitename = "Indicators.jl",
     authors = "Jacob Amos, Matthew Farrell",
     pages = ["Home"=>"index.md",
+        "Tables" => "tables.md",
         "Conventional" => ["Moving Averages" => "ma.md",
             "Momentum Indicators" => "mom.md",
             "Volatility Indicators" => "vol.md"],

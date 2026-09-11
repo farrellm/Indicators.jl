@@ -1,23 +1,10 @@
 # trendy
 @testset "Trendlines" begin
     Random.seed!(SEED)
-    @testset "Array" begin
-        x = cumsum(randn(N))
-        tmp = resistance(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = support(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = minima(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = maxima(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-    end
+    x = cumsum(randn(N))
+    @test valid(resistance(x))
+    @test valid(support(x))
+    @test length(maxima(x)) == N && any(maxima(x))
+    @test length(minima(x)) == N && any(minima(x))
+    @test maxima([1.0, 3.0, 2.0, 5.0, 4.0]) == [false, true, false, true, false]
 end

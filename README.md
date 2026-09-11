@@ -4,7 +4,11 @@
 
 # Indicators
 
-Indicators is a [Julia](https://julialang.org) package offering efficient implementations of many technical analysis indicators and algorithms. This work is inspired by the [TTR](https://github.com/joshuaulrich/TTR) package in [R](https://www.r-project.org/) and the [Python](https://www.python.org/) implementation of [TA-Lib](https://github.com/mrjbq7/ta-lib), and the ultimate goal is to implement all of the functionality of these offerings (and more) in Julia. This package has been written to be able to interface with both native Julia `Array` types, as well as the `TS` time series type from the [Temporal](https://github.com/dysonance/Temporal.jl) package. Contributions are of course always welcome for wrapping any of these functions in methods for other types and/or packages out there, as are suggestions for other indicators to add to the lists below.
+Indicators is a [Julia](https://julialang.org) package offering efficient implementations of many technical analysis indicators and algorithms. This work is inspired by the [TTR](https://github.com/joshuaulrich/TTR) package in [R](https://www.r-project.org/) and the [Python](https://www.python.org/) implementation of [TA-Lib](https://github.com/mrjbq7/ta-lib), and the ultimate goal is to implement all of the functionality of these offerings (and more) in Julia. Contributions are of course always welcome for wrapping any of these functions in methods for other types and/or packages out there, as are suggestions for other indicators to add to the lists below.
+
+The indicators take plain Julia vectors. Indicators that need several series take one vector per series (e.g. `atr(high, low, close)`), and indicators with several outputs return a `NamedTuple` (e.g. `bbands(x).upper`). Every indicator also accepts any [Tables.jl](https://github.com/JuliaData/Tables.jl) table, such as a `DataFrame`, once Tables.jl is loaded; see the [Tables documentation](https://farrellm.github.io/Indicators.jl/dev/tables/).
+
+> **Breaking changes in 0.9:** Temporal.jl `TS` support was replaced by Tables.jl support, matrix inputs by separate vectors, and matrix outputs by `NamedTuple`s, and some keywords were renamed. See [Migrating from 0.8](https://farrellm.github.io/Indicators.jl/dev/#Migrating-from-0.8).
 
 ## Implemented
 ### Moving Averages
@@ -101,12 +105,12 @@ Indicators is a [Julia](https://julialang.org) package offering efficient implem
 #### Randomly generated data:
 ![alt text](examples/example1.png "Example 1")
 
-#### Apple (AAPL) daily data from 2015:
+#### Moving averages and oscillators:
 ![alt text](examples/example2.png "Example 2")
 
-#### Corn futures daily data
+#### Trendlines:
 ![alt text](examples/example3.png "Example 3")
 
-#### Gold Futures Moving Regression
+#### Moving regression:
 ![alt text](examples/example4.png "Example 4")
 

@@ -2,19 +2,18 @@
 
 # Example
 ```@example
-using Temporal, Indicators, Plots, Random
+using Indicators, Plots, Random
 Random.seed!(1)
-x = TS(100 .+ cumsum(randn(252)))
-x.fields[1] = :Price
+x = 100 .+ cumsum(randn(252))
 
 r = [rsrange(x, n=60) rsrange(x, n=60, cumulative=true)]
-r.fields = Symbol.(["Rolling R/S", "Cumulative R/S"])
 h = [hurst(x, n=60) hurst(x, n=60, cumulative=true)]
-h.fields = Symbol.(["Rolling Hurst", "Cumulative Hurst"])
 
-f1 = plot(x, linewidth=3, color=:black)
-f2 = plot(r, linewidth=2, color=[:red :darkred], linestyle=[:solid :dash])
-f3 = plot(h, linewidth=2, color=[:cyan :darkcyan], linestyle=[:solid :dash])
+f1 = plot(x, linewidth=3, color=:black, label="Price")
+f2 = plot(r, linewidth=2, color=[:red :darkred], linestyle=[:solid :dash],
+          label=["Rolling R/S" "Cumulative R/S"])
+f3 = plot(h, linewidth=2, color=[:cyan :darkcyan], linestyle=[:solid :dash],
+          label=["Rolling Hurst" "Cumulative Hurst"])
 plot(f1, f2, f3, layout=@layout[a{0.5h}; b{0.25h}; c{0.25h}])
 savefig("chaos_example.svg")  # hide
 ```

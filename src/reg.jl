@@ -1,51 +1,50 @@
-using Statistics
-
 """
 ```
-mlr_beta(y::Array{T}; n::Int64=10, x::Array{T}=collect(1.0:n))::Matrix{Float64} where {T<:Real}
+mlr_beta(y::AbstractVector{<:Real}; n::Int=10, x::AbstractVector{<:Real}=collect(1.0:n))
 ```
 
-Moving linear regression intercept (column 1) and slope (column 2)
+Moving linear regression intercept and slope
+
+*Output*
+
+A NamedTuple `(intercept, slope)`.
 """
 function mlr_beta(
-    y::AbstractArray{T};
-    n::Int64 = 10,
-    x::AbstractArray{T} = collect(1.0:n),
-)::Matrix{Float64} where {T<:Real}
+    y::AbstractVector{<:Real};
+    n::Int = 10,
+    x::AbstractVector{<:Real} = collect(1.0:n),
+)
     @assert n<length(y) && n>0 "Argument n out of bounds."
-    @assert size(y, 2) == 1
-    @assert size(x, 1) == n || size(x, 1) == size(y, 1)
-    const_x = size(x, 1) == n
-    out = zeros(T, (length(y), 2))
-    out[1:(n-1), :] .= NaN
-    xbar = mean(x)
+    @assert length(x) == n || length(x) == length(y)
+    const_x = length(x) == n
+    intercept = fill(NaN, length(y))
+    slope = fill(NaN, length(y))
     ybar = runmean(y, n = n, cumulative = false)
     @inbounds for i in n:length(y)
         yi = y[(i-n+1):i]
         xi = const_x ? x : x[(i-n+1):i]
-        out[i, 2] = cov(xi, yi) / var(xi)
-        out[i, 1] = ybar[i] - out[i, 2]*xbar
+        slope[i] = cov(xi, yi) / var(xi)
+        intercept[i] = ybar[i] - slope[i]*mean(xi)
     end
-    return out
+    return (intercept = intercept, slope = slope)
 end
 
 """
 ```
-mlr_slope(y::Array{T}; n::Int64=10, x::Array{T}=collect(1.0:n))::Array{Float64} where {T<:Real}
+mlr_slope(y::AbstractVector{<:Real}; n::Int=10, x::AbstractVector{<:Real}=collect(1.0:n))::Vector{Float64}
 ```
 
 Moving linear regression slope
 """
 function mlr_slope(
-    y::AbstractArray{T};
-    n::Int64 = 10,
-    x::AbstractArray{T} = collect(1.0:n),
-)::Array{Float64} where {T<:Real}
+    y::AbstractVector{<:Real};
+    n::Int = 10,
+    x::AbstractVector{<:Real} = collect(1.0:n),
+)::Vector{Float64}
     @assert n<length(y) && n>0 "Argument n out of bounds."
-    @assert size(y, 2) == 1
-    @assert size(x, 1) == n || size(x, 1) == size(y, 1)
-    const_x = size(x, 1) == n
-    out = zeros(size(y))
+    @assert length(x) == n || length(x) == length(y)
+    const_x = length(x) == n
+    out = zeros(length(y))
     out[1:(n-1)] .= NaN
     @inbounds for i in n:length(y)
         yi = y[(i-n+1):i]
@@ -57,55 +56,52 @@ end
 
 """
 ```
-mlr_intercept(y::Array{T}; n::Int64=10, x::Array{T}=collect(1.0:n))::Array{Float64} where {T<:Real}
+mlr_intercept(y::AbstractVector{<:Real}; n::Int=10, x::AbstractVector{<:Real}=collect(1.0:n))::Vector{Float64}
 ```
 
 Moving linear regression y-intercept
 """
 function mlr_intercept(
-    y::AbstractArray{T};
-    n::Int64 = 10,
-    x::AbstractArray{T} = collect(1.0:n),
-)::Array{Float64} where {T<:Real}
+    y::AbstractVector{<:Real};
+    n::Int = 10,
+    x::AbstractVector{<:Real} = collect(1.0:n),
+)::Vector{Float64}
     @assert n<length(y) && n>0 "Argument n out of bounds."
-    @assert size(y, 2) == 1
-    @assert size(x, 1) == n || size(x, 1) == size(y, 1)
-    const_x = size(x, 1) == n
-    out = zeros(size(y))
+    @assert length(x) == n || length(x) == length(y)
+    const_x = length(x) == n
+    out = zeros(length(y))
     out[1:(n-1)] .= NaN
-    xbar = mean(x)
     ybar = runmean(y, n = n, cumulative = false)
     @inbounds for i in n:length(y)
         yi = y[(i-n+1):i]
         xi = const_x ? x : x[(i-n+1):i]
-        out[i] = ybar[i] - xbar*(cov(xi, yi)/var(xi))
+        out[i] = ybar[i] - mean(xi)*(cov(xi, yi)/var(xi))
     end
     return out
 end
 
 """
 ```
-mlr(y::Array{T}; n::Int64=10)::Array{Float64} where {T<:Real}
+mlr(y::AbstractVector{<:Real}; n::Int=10)::Vector{Float64}
 ```
 
 Moving linear regression predictions
 """
-function mlr(y::AbstractArray{T}; n::Int64 = 10)::Array{Float64} where {T<:Real}
+function mlr(y::AbstractVector{<:Real}; n::Int = 10)::Vector{Float64}
     b = mlr_beta(y, n = n)
-    return b[:, 1] + b[:, 2]*float(n)
+    return b.intercept .+ b.slope .* float(n)
 end
 
 """
 ```
-mlr_se(y::Array{T}; n::Int64=10)::Array{Float64} where {T<:Real}
+mlr_se(y::AbstractVector{<:Real}; n::Int=10)::Vector{Float64}
 ```
 
 Moving linear regression standard errors
 """
-function mlr_se(y::AbstractArray{T}; n::Int64 = 10)::Array{Float64} where {T<:Real}
+function mlr_se(y::AbstractVector{<:Real}; n::Int = 10)::Vector{Float64}
     yhat = mlr(y, n = n)
-    r = zeros(T, n)
-    out = zeros(size(y))
+    out = zeros(length(y))
     out[1:(n-1)] .= NaN
     nf = float(n)
     @inbounds for i in n:length(y)
@@ -117,75 +113,56 @@ end
 
 """
 ```
-mlr_ub(y::Array{T}; n::Int64=10, se::T=2.0)::Array{Float64} where {T<:Real}
+mlr_ub(y::AbstractVector{<:Real}; n::Int=10, mult::Real=2.0)::Vector{Float64}
 ```
 
-Moving linear regression upper bound
+Moving linear regression upper bound, `mult` standard errors above the prediction
 """
-function mlr_ub(
-    y::AbstractArray{T};
-    n::Int64 = 10,
-    se::T = 2.0,
-)::Array{Float64} where {T<:Real}
-    return mlr(y, n = n) + se*mlr_se(y, n = n)
+function mlr_ub(y::AbstractVector{<:Real}; n::Int = 10, mult::Real = 2.0)::Vector{Float64}
+    return mlr(y, n = n) .+ mult .* mlr_se(y, n = n)
 end
 
 """
 ```
-mlr_lb(y::Array{T}; n::Int64=10, se::T=2.0)::Array{Float64} where {T<:Real}
+mlr_lb(y::AbstractVector{<:Real}; n::Int=10, mult::Real=2.0)::Vector{Float64}
 ```
 
-Moving linear regression lower bound
+Moving linear regression lower bound, `mult` standard errors below the prediction
 """
-function mlr_lb(
-    y::AbstractArray{T};
-    n::Int64 = 10,
-    se::T = 2.0,
-)::Array{Float64} where {T<:Real}
-    return mlr(y, n = n) - se*mlr_se(y, n = n)
+function mlr_lb(y::AbstractVector{<:Real}; n::Int = 10, mult::Real = 2.0)::Vector{Float64}
+    return mlr(y, n = n) .- mult .* mlr_se(y, n = n)
 end
 
 """
 ```
-mlr_bands(y::Array{T}; n::Int64=10, se::T=2.0)::Matrix{Float64} where {T<:Real}
+mlr_bands(y::AbstractVector{<:Real}; n::Int=10, mult::Real=2.0)
 ```
 
 Moving linear regression bands
 
+*Output*
 
-*Output:*
-
-Column 1: Lower bound
-
-Column 2: Regression estimate
-
-Column 3: Upper bound
+A NamedTuple `(lower, mid, upper)`: the regression estimate and the bands `mult`
+standard errors below and above it.
 """
-function mlr_bands(
-    y::AbstractArray{T};
-    n::Int64 = 10,
-    se::T = 2.0,
-)::Matrix{Float64} where {T<:Real}
-    out = zeros(T, (length(y), 3))
-    out[1:(n-1), :] .= NaN
-    out[:, 2] = mlr(y, n = n)
-    out[:, 1] = mlr_lb(y, n = n, se = se)
-    out[:, 3] = mlr_ub(y, n = n, se = se)
-    return out
+function mlr_bands(y::AbstractVector{<:Real}; n::Int = 10, mult::Real = 2.0)
+    mid = mlr(y, n = n)
+    se = mlr_se(y, n = n)
+    return (lower = mid .- mult .* se, mid = mid, upper = mid .+ mult .* se)
 end
 
 """
 ```
-mlr_rsq(y::Array{T}; n::Int64=10, adjusted::Bool=false)::Array{Float64} where {T<:Real}
+mlr_rsq(y::AbstractVector{<:Real}; n::Int=10, adjusted::Bool=false)::Vector{Float64}
 ```
 
 Moving linear regression R-squared or adjusted R-squared
 """
 function mlr_rsq(
-    y::AbstractArray{T};
-    n::Int64 = 10,
+    y::AbstractVector{<:Real};
+    n::Int = 10,
     adjusted::Bool = false,
-)::Array{Float64} where {T<:Real}
+)::Vector{Float64}
     yhat = mlr(y, n = n)
     rsq = runcor(y, yhat, n = n, cumulative = false) .^ 2.0
     if adjusted

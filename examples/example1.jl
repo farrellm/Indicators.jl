@@ -17,9 +17,6 @@ for i in 1:n
         Close[i] = Low[i]
     end
 end
-OHLC = [Open High Low Close]
-HLC = [High Low Close]
-HL = [High Low]
 t = collect(today():Day(1):(today()+Day(n-1)))
 
 # Overlays
@@ -29,21 +26,16 @@ grid(ls = "-", c = [0.8, 0.8, 0.8])
 plot(t, sma(Close, n = 40), c = [1, 0.5, 0], label = "SMA (40)")
 plot(t, ema(Close, n = 10), c = [0, 1, 1], label = "EMA (10)")
 plot(t, wma(Close, n = 20), c = [1, 0, 1], label = "WMA (20)")
-plot(t, psar(HL), "bo", label = "Parabolic SAR")
+plot(t, psar(High, Low), "bo", label = "Parabolic SAR")
 legend(loc = "best", frameon = false)
 
 # MACD
+m = macd(Close)
 subplot(412)
-plot(t, macd(Close)[:, 1], label = "MACD", c = [1, 0.5, 1])
-plot(t, macd(Close)[:, 2], label = "Signal", c = [0.5, 0.25, 0.5])
-bar(
-    t,
-    macd(Close)[:, 3],
-    align = "center",
-    label = "Histogram",
-    color = [0, 0.5, 0.5],
-    alpha = 0.25,
-)
+plot(t, m.macd, label = "MACD", c = [1, 0.5, 1])
+plot(t, m.signal, label = "Signal", c = [0.5, 0.25, 0.5])
+bar(t, m.histogram, align = "center", label = "Histogram", color = [0, 0.5, 0.5],
+    alpha = 0.25)
 plot([t[1], t[end]], [0, 0], ls = "--", c = [0.5, 0.5, 0.5])
 grid(ls = "-", c = [0.8, 0.8, 0.8])
 legend(loc = "best", frameon = false)
@@ -57,10 +49,11 @@ plot([t[1], t[end]], [70, 70], c = "r")
 legend(loc = "best", frameon = false)
 
 # ADX
+a = adx(High, Low, Close)
 subplot(414)
-plot(t, adx(HLC)[:, 1], "g-", label = "DI+")
-plot(t, adx(HLC)[:, 2], "r-", label = "DI-")
-plot(t, adx(HLC)[:, 3], c = [0, 0, 1], lw = 2, label = "ADX")
+plot(t, a.di_plus, "g-", label = "DI+")
+plot(t, a.di_minus, "r-", label = "DI-")
+plot(t, a.adx, c = [0, 0, 1], lw = 2, label = "ADX")
 grid(ls = "-", c = [0.8, 0.8, 0.8])
 legend(loc = "best", frameon = false)
 
