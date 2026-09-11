@@ -1,5 +1,4 @@
 using Indicators
-using Temporal
 using Test
 using Random
 using Statistics

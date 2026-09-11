@@ -1,9 +1,10 @@
-VERSION >= v"0.4.0" && __precompile__(true)
-
 module Indicators
+
+using Statistics
+
 export
     runmean, runsum, runvar, runsd, runcov, runcor, runmax, runmin, runmad, runquantile,
-    runacf,
+    runacf, runfun,
     wilder_sum, mode, diffn,
     sma, trima, wma, ema, mma, kama, mama, hma, swma, dema, tema, alma, zlema, vwma, vwap,
     hama,
@@ -24,7 +25,4 @@ include("trendy.jl")
 include("utils.jl")
 include("patterns.jl")
 include("chaos.jl")
-
-using Temporal
-include("temporal.jl")
 end

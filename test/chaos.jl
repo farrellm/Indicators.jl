@@ -16,14 +16,4 @@
         @test size(rs) == size(x)
         x = randn(100)
     end
-    @testset "Temporal" begin
-        # chaos indicators
-        x = TS(randn(N))
-        tmp = hurst(x)
-        @test size(tmp, 1) == size(x, 1)
-        @test size(tmp, 2) == 1
-        tmp = rsrange(x)
-        @test size(tmp, 1) == size(x, 1)
-        @test size(tmp, 2) == 1
-    end
 end

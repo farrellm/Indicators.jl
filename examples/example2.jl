@@ -1,23 +1,20 @@
-# workspace()
 using Indicators
 using PyPlot
 using Dates
-using Temporal
+using Random
 
-aapl = yahoo("AAPL")
-aapl = aapl["2015"]
-
-t = aapl.index
-aapl = aapl.values
-Open = aapl[:, 1]
-High = aapl[:, 2]
-Low = aapl[:, 3]
-Close = aapl[:, 4]
-Volume = aapl[:, 5]
+# Synthetic daily OHLC data for one trading year
+Random.seed!(2)
+n = 252
+t = collect(Date(2015, 1, 2):Day(1):(Date(2015, 1, 2)+Day(n-1)))
+Close = 100.0 .+ cumsum(randn(n))
+Open = [Close[1]; Close[1:(end-1)]]
+High = max.(Open, Close) .+ rand(n)
+Low = min.(Open, Close) .- rand(n)
 HLC = [High Low Close]
 
 subplot(411)
-plot(t, Close, lw = 2, c = "k", label = "AAPL")
+plot(t, Close, lw = 2, c = "k", label = "Price")
 plot(t, kama(Close), c = "b", label = "Kaufman AMA")
 plot(t, trima(Close), c = "g", label = "Triangula MA")
 plot(t, hma(Close), c = "r", label = "Hull MA")

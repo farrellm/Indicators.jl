@@ -1,38 +1,25 @@
-using Temporal
 using Indicators
 using PyPlot
+using Random
 
-X = quandl("CHRIS/CME_C1")
-x = X["2015-03/", :Settle]
+# Synthetic daily prices
+Random.seed!(3)
+n = 200
+t = 1:n
+x = 400.0 .+ cumsum(randn(n))
 
-plot(x.index, x.values, label = "Corn", lw = 3, color = "blue")
+plot(t, x, label = "Price", lw = 3, color = "blue")
 grid(true, ls = "-", color = "black", alpha = 0.25)
 
-# First-order trendlines
-maxi = maxima(x)
-mini = minima(x)
-plot(x[maxi].index, x[maxi].values, label = "Resistance", color = "red", marker = "o")
-plot(x[mini].index, x[mini].values, label = "Support", color = "green", marker = "o")
-
-# Second-order trendlines
-maxi = [x maxima(x[maxi])][:, 2]
-mini = [x minima(x[mini])][:, 2]
-maxi.values[isnan(maxi.values)] = 0.0
-mini.values[isnan(mini.values)] = 0.0
-maxi = ts(map(Bool, maxi.values), maxi.index, maxi.fields)
-mini = ts(map(Bool, mini.values), mini.index, mini.fields)
-plot(x[maxi].index, x[maxi].values, color = "red", marker = "o")
-plot(x[mini].index, x[mini].values, color = "green", marker = "o")
-
-# Third-order trendlines
-maxi = [x maxima(x[maxi])][:, 2]
-mini = [x minima(x[mini])][:, 2]
-maxi.values[isnan(maxi.values)] = 0.0
-mini.values[isnan(mini.values)] = 0.0
-maxi = ts(map(Bool, maxi.values), maxi.index, maxi.fields)
-mini = ts(map(Bool, mini.values), mini.index, mini.fields)
-plot(x[maxi].index, x[maxi].values, color = "red", marker = "o")
-plot(x[mini].index, x[mini].values, color = "green", marker = "o")
+# First-, second- and third-order trendlines
+for order in 1:3
+    maxi = maxima(x, order = order)
+    mini = minima(x, order = order)
+    plot(t[maxi], x[maxi], label = order == 1 ? "Resistance" : nothing, color = "red",
+        marker = "o")
+    plot(t[mini], x[mini], label = order == 1 ? "Support" : nothing, color = "green",
+        marker = "o")
+end
 
 legend(loc = "best", frameon = false)
 

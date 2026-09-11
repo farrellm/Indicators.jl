@@ -1,6 +1,8 @@
-import Temporal.acf  # used for running autocorrelation function
-
-using Statistics
+# Autocorrelation of `x` at each lag in `lags` (lag k pairs x[t] with x[t+k])
+function _acf(x::AbstractVector, lags::AbstractVector{Int})::Vector{Float64}
+    @assert all(lags .< length(x)-2) "Lags must be less than length(x) - 2"
+    return [cor(x[1:(end-k)], x[(1+k):end]) for k in lags]
+end
 
 """
 ```
@@ -448,11 +450,11 @@ function runacf(x::AbstractVector{T};
     out = zeros((N, length(lags))) * NaN
     if cumulative
         @inbounds for i in n:N
-            out[i, :] = acf(x[1:i], lags = lags)
+            out[i, :] = _acf(x[1:i], lags)
         end
     else
         @inbounds for i in n:N
-            out[i, :] = acf(x[(i-n+1):i], lags = lags)
+            out[i, :] = _acf(x[(i-n+1):i], lags)
         end
     end
     return out

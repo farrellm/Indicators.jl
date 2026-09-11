@@ -21,20 +21,4 @@
         @test size(tmp, 2) == 3
         @test sum(isnan.(tmp)) != N
     end
-    @testset "Temporal" begin
-        x = TS(cumsum(randn(N)))
-        X = TS(cumsum(randn(N, 3), dims = 1))
-        tmp = bbands(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 3
-        tmp = tr(X)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        tmp = atr(X)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        tmp = keltner(X)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 3
-    end
 end
