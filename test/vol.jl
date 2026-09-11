@@ -3,7 +3,7 @@
     Random.seed!(SEED)
     @testset "Array" begin
         x = cumsum(randn(N))
-        X = cumsum(randn(N, 3), dims=1)
+        X = cumsum(randn(N, 3), dims = 1)
         tmp = bbands(x)
         @test size(tmp, 1) == N
         @test size(tmp, 2) == 3
@@ -23,7 +23,7 @@
     end
     @testset "Temporal" begin
         x = TS(cumsum(randn(N)))
-        X = TS(cumsum(randn(N, 3), dims=1))
+        X = TS(cumsum(randn(N, 3), dims = 1))
         tmp = bbands(x)
         @test size(tmp, 1) == N
         @test size(tmp, 2) == 3

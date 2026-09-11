@@ -10,7 +10,7 @@
         a, b = Indicators.divide(x)
         @test [a; b] == x
         # workhorses
-        h = hurst(x, n=100)
+        h = hurst(x, n = 100)
         @test size(h) == size(x)
         rs = rsrange(x)
         @test size(rs) == size(x)
@@ -20,10 +20,10 @@
         # chaos indicators
         x = TS(randn(N))
         tmp = hurst(x)
-        @test size(tmp,1) == size(x,1)
-        @test size(tmp,2) == 1
+        @test size(tmp, 1) == size(x, 1)
+        @test size(tmp, 2) == 1
         tmp = rsrange(x)
-        @test size(tmp,1) == size(x,1)
-        @test size(tmp,2) == 1
+        @test size(tmp, 1) == size(x, 1)
+        @test size(tmp, 2) == 1
     end
 end
