@@ -35,7 +35,7 @@ Weighted moving average (WMA)
 function wma(
     x::AbstractArray{T};
     n::Int64 = 10,
-    wts::AbstractArray{T} = collect(1:n)/sum(1:n),
+    wts::AbstractVector{<:Real} = collect(1:n)/sum(1:n),
 ) where {T<:Real}
     @assert n<size(x, 1) && n>0 "Argument n out of bounds"
     out = fill(NaN, size(x, 1))
@@ -60,7 +60,7 @@ end
 
 """
 ```
-ema(x::Array{T}; n::Int64=10, alpha::T=2.0/(n+1.0), wilder::Bool=false)::Array{Float64}
+ema(x::Array{T}; n::Int64=10, alpha::Real=2.0/(n+1), wilder::Bool=false)::Array{Float64}
 ```
 
 Exponential moving average (EMA)
@@ -68,19 +68,17 @@ Exponential moving average (EMA)
 function ema(
     x::AbstractArray{T};
     n::Int64 = 10,
-    alpha::T = 2.0/(n+1),
+    alpha::Real = 2.0/(n+1),
     wilder::Bool = false,
 ) where {T<:Real}
     @assert n<size(x, 1) && n>0 "Argument n out of bounds."
-    if wilder
-        alpha = 1.0/n
-    end
+    a = wilder ? 1.0/n : Float64(alpha)
     out = zeros(size(x))
     i = first_valid(x)
     out[1:(n+i-2)] .= NaN
     out[n+i-1] = mean(x[i:(n+i-1)])
     @inbounds for i in (n+i):size(x, 1)
-        out[i] = alpha * (x[i] - out[i-1]) + out[i-1]
+        out[i] = a * (x[i] - out[i-1]) + out[i-1]
     end
     return out
 end
@@ -138,18 +136,18 @@ end
 
 """
 ```
-mama(x::Array{T}; fastlimit::T=0.5, slowlimit::T=0.05)::Matrix{Float64}
+mama(x::Array{T}; fastlimit::Real=0.5, slowlimit::Real=0.05)::Matrix{Float64}
 ```
 
 MESA adaptive moving average (MAMA)
 """
 function mama(
     x::AbstractArray{T};
-    fastlimit::T = 0.5,
-    slowlimit::T = 0.05,
+    fastlimit::Real = 0.5,
+    slowlimit::Real = 0.05,
 )::Matrix{Float64} where {T<:Real}
     n = size(x, 1)
-    out = zeros(T, n, 2)
+    out = zeros(n, 2)
     #smooth = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     smooth_1 = 0.0
     smooth_2 = 0.0
@@ -346,8 +344,8 @@ Kaufman adaptive moving average (KAMA)
 function kama(
     x::AbstractArray{T};
     n::Int64 = 10,
-    nfast::T = 0.6667,
-    nslow::T = 0.0645,
+    nfast::Real = 0.6667,
+    nslow::Real = 0.0645,
 ) where {T<:Real}
     @assert n<size(x, 1) && n>0 "Argument n out of bounds."
     @assert nfast>0.0 && nfast<1.0 "Argument nfast out of bounds."
@@ -370,7 +368,7 @@ end
 
 """
 ```
-alma{T}(x::Array{T}; n::Int64=9, offset::T=0.85, sigma::T=6.0)::Array{Float64}
+alma(x::Array{T}; n::Int64=9, offset::Real=0.85, sigma::Real=6.0)::Array{Float64}
 ```
 
 Arnaud-Legoux moving average (ALMA)
@@ -378,23 +376,21 @@ Arnaud-Legoux moving average (ALMA)
 function alma(
     x::AbstractArray{T};
     n::Int64 = 9,
-    offset::T = 0.85,
-    sigma::T = 6.0,
+    offset::Real = 0.85,
+    sigma::Real = 6.0,
 )::Array{Float64} where {T<:Real}
     @assert n<size(x, 1) && n>0 "Argument n out of bounds."
     @assert sigma>0.0 "Argument sigma must be greater than 0."
     @assert offset>=0.0 && offset<=1 "Argument offset must be in (0,1)."
     out = zeros(size(x))
     out[1:(n-1)] .= NaN
+    # Gaussian weights over the window, oldest to newest, peaking at `offset`
     m = floor(offset*(float(n)-1.0))
     s = float(n) / sigma
-    w = exp.(-(((0.0:-1.0:(-float(n)+1.0)) .- m) .^ 2.0) / (2.0*s*s))
-    wsum = sum(w)
-    if wsum != 0.0
-        w = w ./ wsum
-    end
+    w = exp.(-(((0.0:(float(n)-1.0)) .- m) .^ 2.0) / (2.0*s*s))
+    w = w ./ sum(w)
     @inbounds for i in n:length(x)
-        out[i] = sum(x[i-n+1] .* w)
+        out[i] = sum(x[(i-n+1):i] .* w)
     end
     return out
 end
@@ -454,7 +450,6 @@ vwap(cv::Matrix{T})::Array{T}
 Volume-weighted average price (VWAP)
 """
 function vwap(cv::AbstractMatrix{T})::Array{Float64} where {T<:Real}
-    out = zeros(size(cv))[1]
     close_price = cv[:, 1]
     volume = cv[:, 2]
     out = cumsum(close_price .* volume) ./ cumsum(volume)

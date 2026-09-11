@@ -16,15 +16,14 @@ Aroon up/down/oscillator
 function aroon(hl::AbstractMatrix{T}; n::Int64 = 25)::Matrix{Float64} where {T<:Real}
     @assert size(hl, 2) == 2 "Argument `hl` must have exactly 2 columns."
     @assert n < size(hl, 1) "Argument `n` must be less than the number of rows in argument `hl`."
-    out = zeros(T, (size(hl, 1), 3))
-    @inbounds for i in n:size(hl, 1)
-        out[i, 1] = 100.0 * (n - findmax(hl[(i-n+1):i, 1])[2]) / 25.0
-    end
-    @inbounds for i in n:size(hl, 1)
-        out[i, 2] = 100.0 * (n - findmin(hl[(i-n+1):i, 2])[2]) / 25.0
+    # Look back over the current bar plus the previous `n` (the TTR convention); the
+    # position of the extreme within that window gives the periods since it occurred.
+    out = fill(NaN, size(hl, 1), 3)
+    @inbounds for i in (n+1):size(hl, 1)
+        out[i, 1] = 100.0 * (findmax(hl[(i-n):i, 1])[2] - 1) / n
+        out[i, 2] = 100.0 * (findmin(hl[(i-n):i, 2])[2] - 1) / n
     end
     out[:, 3] = out[:, 1]-out[:, 2]  # aroon oscillator
-    out[1:(n-1), :] .= NaN
     return out
 end
 
@@ -47,11 +46,9 @@ function donch(
     inclusive::Bool = true,
 )::Matrix{Float64} where {T<:Real}
     @assert size(hl, 2) == 2 "Argument `hl` must have exactly 2 columns."
-    local lower::Array{T} =
-        runmin(hl[:, 2], n = n, cumulative = false, inclusive = inclusive)
-    local upper::Array{T} =
-        runmax(hl[:, 1], n = n, cumulative = false, inclusive = inclusive)
-    local middle::Array{T} = (lower .+ upper) ./ 2.0
+    lower = runmin(hl[:, 2], n = n, cumulative = false, inclusive = inclusive)
+    upper = runmax(hl[:, 1], n = n, cumulative = false, inclusive = inclusive)
+    middle = (lower .+ upper) ./ 2.0
     return [lower middle upper]
 end
 
@@ -82,7 +79,7 @@ Ichimoku Kinko Hyo
 """
 function ichimoku(
     hlc::AbstractMatrix{T};
-    params = (10, 26, 26, 52, -26),
+    params = (9, 26, 26, 52, -26),
 )::Matrix{Float64} where {T<:Real}
     # Source: https://www.investopedia.com/terms/i/ichimokuchart.asp
     # TODO: Implement option to get forward looking Senkous
@@ -139,7 +136,7 @@ Moving average convergence-divergence
 function macd(x::AbstractArray{T}; nfast::Int64 = 12, nslow::Int64 = 26, nsig::Int64 = 9,
     fastMA::Function = ema, slowMA::Function = ema, signalMA::Function = sma,
 )::Matrix{Float64} where {T<:Real}
-    out = zeros(T, (length(x), 3))
+    out = zeros(length(x), 3)
     out[:, 1] = fastMA(x, n = nfast) - slowMA(x, n = nslow)
     out[:, 2] = signalMA(out[:, 1], n = nsig)
     out[:, 3] = out[:, 1] - out[:, 2]
@@ -178,10 +175,13 @@ end
 
 """
 ```
-adx(hlc::Array{T}; n::Int64=14, wilder=true)::Array{Float64}
+adx(hlc::Matrix{T}; n::Int64=14, ma::Function=ema, args...)::Matrix{Float64}
 ```
 
 Average directional index
+
+Extra keyword arguments are passed to the moving average `ma`, e.g. `wilder=true` for
+Wilder smoothing with the default `ema`.
 
 *Output*
 
@@ -245,7 +245,7 @@ end
 
 """
 ```
-psar(hl::Array{T}; af_min::T=0.02, af_max::T=0.2, af_inc::T=af_min)::Array{Float64}
+psar(hl::Array{T}; af_min::Real=0.02, af_max::Real=0.2, af_inc::Real=af_min)::Array{Float64}
 ```
 
 Parabolic stop and reverse (SAR)
@@ -258,9 +258,9 @@ Parabolic stop and reverse (SAR)
 """
 function psar(
     hl::AbstractArray{T};
-    af_min::T = 0.02,
-    af_max::T = 0.2,
-    af_inc::T = af_min,
+    af_min::Real = 0.02,
+    af_max::Real = 0.2,
+    af_inc::Real = af_min,
 )::Array{Float64} where {T<:Real}
     @assert af_min<1.0 && af_min>0.0 "Argument af_min must be in [0,1]."
     @assert af_max<1.0 && af_max>0.0 "Argument af_max must be in [0,1]."
@@ -274,7 +274,7 @@ function psar(
     ep = 0.0
     maxi = 0.0
     mini = 0.0
-    sar = zeros(T, size(hl, 1))
+    sar = zeros(size(hl, 1))
     sar[1] = hl[1, 2] - std(hl[:, 1]-hl[:, 2])
     @inbounds for i in 2:size(hl, 1)
         ls = ls0
@@ -337,7 +337,7 @@ end
 
 """
 ```
-wpr(hlc::Matrix{T}, n::Int64=14)::Array{Float64}
+wpr(hlc::Matrix{T}; n::Int64=14)::Array{Float64}
 ```
 
 Williams %R
@@ -350,7 +350,7 @@ end
 
 """
 ```
-cci(hlc::Matrix{T}; n::Int64=20, c::T=0.015, ma::Function=sma)::Array{Float64}
+cci(hlc::Matrix{T}; n::Int64=20, c::Real=0.015, ma::Function=sma)::Array{Float64}
 ```
 
 Commodity channel index
@@ -358,7 +358,7 @@ Commodity channel index
 function cci(
     hlc::AbstractMatrix{T};
     n::Int64 = 20,
-    c::T = 0.015,
+    c::Real = 0.015,
     ma::Function = sma,
     args...,
 )::Array{Float64} where {T<:Real}
@@ -382,7 +382,7 @@ function stoch(hlc::AbstractMatrix{T}; nK::Int64 = 14, nD::Int64 = 3,
     @assert nD<size(hlc, 1) && nD>0 "Argument `nD` out of bounds."
     hihi = runmax(hlc[:, 1], n = nK, cumulative = false)
     lolo = runmin(hlc[:, 2], n = nK, cumulative = false)
-    out = zeros(T, (size(hlc, 1), 2))
+    out = zeros(size(hlc, 1), 2)
     out[:, 1] = (hlc[:, 3]-lolo) ./ (hihi-lolo) * 100.0
     out[:, 2] = ma(out[:, 1], n = nD; args...)
     if kind == :slow
@@ -410,7 +410,7 @@ function smi(hlc::AbstractMatrix{T}; n::Int64 = 13, nFast::Int64 = 2, nSlow::Int
     delta = hlc[:, 3] - (hihi+lolo) / 2.0
     numer = maSlow(maFast(delta, n = nFast), n = nSlow)
     denom = maSlow(maFast(hldif, n = nFast), n = nSlow) / 2.0
-    out = zeros(T, (size(hlc, 1), 2))
+    out = zeros(size(hlc, 1), 2)
     out[:, 1] = 100.0*(numer ./ denom)
     out[:, 2] = maSig(out[:, 1], n = nSig)
     return out

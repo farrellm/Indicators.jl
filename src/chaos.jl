@@ -2,7 +2,7 @@
 # function hilbert_transform(x::Array{T}; n::Int=10)
 # end
 
-function estimate_rsrange(x::AbstractArray{T})::T where {T<:Real}
+function estimate_rsrange(x::AbstractArray{T})::Float64 where {T<:Real}
     n = size(x, 1)
     @assert n>2 "need more than two elements, have $x"
     m = sum(x)/n
@@ -23,7 +23,7 @@ function npieces(x::AbstractArray{T}, minsize::Int = 8)::Int where {T<:Real}
     return i
 end
 
-function genrsdata(x::AbstractArray{T})::Matrix{T} where {T<:Real}
+function genrsdata(x::AbstractArray{T})::Matrix{Float64} where {T<:Real}
     depth = npieces(x)
     if depth == 0
         return [size(x, 1) estimate_rsrange(x)]
@@ -49,7 +49,10 @@ function divide(x::A)::Tuple{A,A} where {A<:AbstractArray}
     return a, b
 end
 
-function estimate_hurst(x::AbstractArray{T}; intercept::Bool = false)::T where {T<:Real}
+function estimate_hurst(
+    x::AbstractArray{T};
+    intercept::Bool = false,
+)::Float64 where {T<:Real}
     RS = genrsdata(x)
     RS = RS[sortperm(RS[:, 1]), :]
     xx = log2.(RS[:, 1])

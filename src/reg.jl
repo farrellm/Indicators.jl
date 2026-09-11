@@ -8,13 +8,13 @@ Moving linear regression intercept (column 1) and slope (column 2)
 function mlr_beta(
     y::AbstractArray{T};
     n::Int64 = 10,
-    x::AbstractArray{T} = collect(1.0:n),
+    x::AbstractVector{<:Real} = collect(1.0:n),
 )::Matrix{Float64} where {T<:Real}
     @assert n<length(y) && n>0 "Argument n out of bounds."
     @assert size(y, 2) == 1
     @assert size(x, 1) == n || size(x, 1) == size(y, 1)
     const_x = size(x, 1) == n
-    out = zeros(T, (length(y), 2))
+    out = zeros(length(y), 2)
     out[1:(n-1), :] .= NaN
     xbar = mean(x)
     ybar = runmean(y, n = n, cumulative = false)
@@ -37,7 +37,7 @@ Moving linear regression slope
 function mlr_slope(
     y::AbstractArray{T};
     n::Int64 = 10,
-    x::AbstractArray{T} = collect(1.0:n),
+    x::AbstractVector{<:Real} = collect(1.0:n),
 )::Array{Float64} where {T<:Real}
     @assert n<length(y) && n>0 "Argument n out of bounds."
     @assert size(y, 2) == 1
@@ -63,7 +63,7 @@ Moving linear regression y-intercept
 function mlr_intercept(
     y::AbstractArray{T};
     n::Int64 = 10,
-    x::AbstractArray{T} = collect(1.0:n),
+    x::AbstractVector{<:Real} = collect(1.0:n),
 )::Array{Float64} where {T<:Real}
     @assert n<length(y) && n>0 "Argument n out of bounds."
     @assert size(y, 2) == 1
@@ -115,7 +115,7 @@ end
 
 """
 ```
-mlr_ub(y::Array{T}; n::Int64=10, se::T=2.0)::Array{Float64} where {T<:Real}
+mlr_ub(y::Array{T}; n::Int64=10, se::Real=2.0)::Array{Float64} where {T<:Real}
 ```
 
 Moving linear regression upper bound
@@ -123,14 +123,14 @@ Moving linear regression upper bound
 function mlr_ub(
     y::AbstractArray{T};
     n::Int64 = 10,
-    se::T = 2.0,
+    se::Real = 2.0,
 )::Array{Float64} where {T<:Real}
     return mlr(y, n = n) + se*mlr_se(y, n = n)
 end
 
 """
 ```
-mlr_lb(y::Array{T}; n::Int64=10, se::T=2.0)::Array{Float64} where {T<:Real}
+mlr_lb(y::Array{T}; n::Int64=10, se::Real=2.0)::Array{Float64} where {T<:Real}
 ```
 
 Moving linear regression lower bound
@@ -138,14 +138,14 @@ Moving linear regression lower bound
 function mlr_lb(
     y::AbstractArray{T};
     n::Int64 = 10,
-    se::T = 2.0,
+    se::Real = 2.0,
 )::Array{Float64} where {T<:Real}
     return mlr(y, n = n) - se*mlr_se(y, n = n)
 end
 
 """
 ```
-mlr_bands(y::Array{T}; n::Int64=10, se::T=2.0)::Matrix{Float64} where {T<:Real}
+mlr_bands(y::Array{T}; n::Int64=10, se::Real=2.0)::Matrix{Float64} where {T<:Real}
 ```
 
 Moving linear regression bands
@@ -162,9 +162,9 @@ Column 3: Upper bound
 function mlr_bands(
     y::AbstractArray{T};
     n::Int64 = 10,
-    se::T = 2.0,
+    se::Real = 2.0,
 )::Matrix{Float64} where {T<:Real}
-    out = zeros(T, (length(y), 3))
+    out = zeros(length(y), 3)
     out[1:(n-1), :] .= NaN
     out[:, 2] = mlr(y, n = n)
     out[:, 1] = mlr_lb(y, n = n, se = se)

@@ -17,6 +17,7 @@ TEST_FILES = [
     "patterns.jl",
     "chaos.jl",
     "trendy.jl",
+    "bugfixes.jl",
 ]
 
 @inbounds for testfile in TEST_FILES

@@ -34,12 +34,12 @@ end
 
 """
 ```
-wilder_sum(x::Vector{T}; n::Int=10)::Vector{T}
+wilder_sum(x::Vector{T}; n::Int=10)::Vector{Float64}
 ```
 
 Welles Wilder summation of an array
 """
-function wilder_sum(x::AbstractVector{T}; n::Int = 10)::Vector{T} where {T<:Real}
+function wilder_sum(x::AbstractVector{T}; n::Int = 10)::Vector{Float64} where {T<:Real}
     @assert n<size(x, 1) && n>0 "Argument n is out of bounds."
     nf = float(n)  # type stability -- all arithmetic done on floats
     out = zeros(size(x))
@@ -83,13 +83,13 @@ end
 
 """
 ```
-diffn(x::Vector{T}; n::Int=1)::Vector{T} where {T<:Real}
-diffn(X::Matrix; n::Int=1)::Matrix = hcat([diffn(X[:,j], n=n) for j in 1:size(X,2)]...)
+diffn(x::Vector{T}; n::Int=1)::Vector{Float64} where {T<:Real}
+diffn(X::Matrix; n::Int=1)::Matrix{Float64}
 ```
 
 Lagged differencing
 """
-function diffn(x::AbstractVector{T}; n::Int = 1)::Vector{T} where {T<:Real}
+function diffn(x::AbstractVector{T}; n::Int = 1)::Vector{Float64} where {T<:Real}
     @assert n<size(x, 1) && n>0 "Argument n out of bounds."
     dx = zeros(size(x))
     dx[1:n] .= NaN

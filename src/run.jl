@@ -181,7 +181,7 @@ runsd(X::Matrix; n::Int=10, cumulative::Bool=true)::Matrix{Float64}
 Compute the running or rolling standard deviation of an array
 """
 function runsd(
-    x::Vector{T};
+    x::AbstractVector{T};
     n::Int = 10,
     cumulative::Bool = true,
 )::Vector{Float64} where {T<:Real}
@@ -199,11 +199,11 @@ runcov(X::Matrix, Y::Matrix; n::Int=10, cumulative::Bool=true)::Matrix{Float64}
 Compute the running or rolling covariance of two arrays
 """
 function runcov(
-    x::AbstractVector{T},
-    y::AbstractVector{T};
+    x::AbstractVector{<:Real},
+    y::AbstractVector{<:Real};
     n::Int = 10,
     cumulative::Bool = true,
-)::Vector{Float64} where {T<:Real}
+)::Vector{Float64}
     @assert length(x) == length(y) "Dimension mismatch: length of `x` not equal to length of `y`."
     @assert n<size(x, 1) && n>1 "Argument n is out of bounds."
     out = zeros(size(x))
@@ -238,11 +238,11 @@ runcor(X::Matrix, Y::Matrix; n::Int=10, cumulative::Bool=true)::Matrix{Float64}
 Compute the running or rolling correlation of two arrays
 """
 function runcor(
-    x::AbstractVector{T},
-    y::AbstractVector{T};
+    x::AbstractVector{<:Real},
+    y::AbstractVector{<:Real};
     n::Int = 10,
     cumulative::Bool = true,
-)::Vector{Float64} where {T<:Float64}
+)::Vector{Float64}
     @assert length(x) == length(y) "Dimension mismatch: length of `x` not equal to length of `y`."
     @assert n<size(x, 1) && n>1 "Argument n is out of bounds."
     out = zeros(size(x))
@@ -388,7 +388,7 @@ runmin(
 
 """
 ```
-runquantile(x::Vector{T}; p::T=0.05, n::Int=10, cumulative::Bool=true)::Vector{Float64}
+runquantile(x::Vector{T}; p::Real=0.05, n::Int=10, cumulative::Bool=true)::Vector{Float64}
 runquantile(X::Matrix; n::Int=10, cumulative::Bool=true, p::Real=0.05)::Matrix{Float64}
 ```
 
@@ -396,12 +396,12 @@ Compute the running/rolling quantile of an array
 """
 function runquantile(
     x::AbstractVector{T};
-    p::T = 0.05,
+    p::Real = 0.05,
     n::Int = 10,
     cumulative::Bool = true,
 )::Vector{Float64} where {T<:Real}
     @assert n<size(x, 1) && n>1 "Argument n is out of bounds."
-    out = zeros(T, size(x, 1))
+    out = zeros(size(x, 1))
     if cumulative
         @inbounds for i in 2:size(x, 1)
             out[i] = quantile(x[1:i], p)
@@ -430,7 +430,7 @@ function runacf(x::Vector{T};
                 n::Int = 10,
                 maxlag::Int = n-3,
                 lags::AbstractVector{Int,1} = 0:maxlag,
-                cumulative::Bool = true)::Matrix{T} where {T<:Real}
+                cumulative::Bool = true)::Matrix{Float64} where {T<:Real}
                 runacf(X::Matrix; n::Int=10, cumulative::Bool=true, maxlag::Int=n-3, lags::AbstractVector{Int}=0:maxlag)::Matrix{Float64}
 ```
 
@@ -440,7 +440,7 @@ function runacf(x::AbstractVector{T};
     n::Int = 10,
     maxlag::Int = n-3,
     lags::AbstractVector{Int} = 0:maxlag,
-    cumulative::Bool = true)::Matrix{T} where {T<:Real}
+    cumulative::Bool = true)::Matrix{Float64} where {T<:Real}
     @assert size(x, 2) == 1 "Autocorrelation input array must be one-dimensional"
     N = size(x, 1)
     @assert n < N && n > 0
@@ -488,16 +488,14 @@ function runfun(
     args...,
 )::Vector{Float64} where {T<:Real}
     N = size(x, 1)
-    out = zeros(T, N) .* NaN
+    out = fill(NaN, N)
     if cumulative
         for i in n:N
-            result::T = f(x[1:i]; args...)
-            out[i] = result
+            out[i] = f(x[1:i]; args...)
         end
     else
         for i in n:N
-            result::T = f(x[(i-n+1):i]; args...)
-            out[i] = result
+            out[i] = f(x[(i-n+1):i]; args...)
         end
     end
     return out
@@ -509,7 +507,7 @@ function runfun(
     n::Int = 10,
     cumulative::Bool = false,
     args...,
-)::Matrix{T} where {T<:Real}
+)::Matrix{Float64} where {T<:Real}
     return hcat(
         (
             runfun(X[:, j], f, n = n, cumulative = cumulative; args...) for
