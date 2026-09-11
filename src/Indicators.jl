@@ -5,7 +5,7 @@ using Statistics
 export
     runmean, runsum, runvar, runsd, runcov, runcor, runmax, runmin, runmad, runquantile,
     runacf, runfun,
-    wilder_sum, mode, diffn,
+    wilder_sum, diffn,
     sma, trima, wma, ema, mma, kama, mama, hma, swma, dema, tema, alma, zlema, vwma, vwap,
     hama,
     mlr_beta, mlr_slope, mlr_intercept, mlr, mlr_se, mlr_ub, mlr_lb, mlr_bands, mlr_rsq,

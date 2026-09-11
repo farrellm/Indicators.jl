@@ -7,35 +7,36 @@
     v = rand(1.0:1000.0, N)
 
     @testset "Float32 input" begin
-        x32 = Float32.(x)
+        x32, h32, l32, v32 = Float32.(x), Float32.(h), Float32.(l), Float32.(v)
         for f in
             (sma, trima, wma, ema, mma, dema, tema, mama, hma, swma, kama, alma, zlema,
             hama, mlr_beta, mlr_slope, mlr_intercept, mlr, mlr_se, mlr_ub, mlr_lb,
             mlr_bands, mlr_rsq, momentum, roc, macd, rsi, kst, bbands, runmean, runsum,
-            runvar, runsd, runmad, runmax, runmin, runquantile, runacf, wilder_sum, diffn,
+            runvar, runsd, runmad, runmax, runmin, runquantile, wilder_sum, diffn,
             maxima, minima, support, resistance, renko, hurst, rsrange)
-            @test size(f(x32), 1) == N
+            @test valid(f(x32))
         end
-        @test size(runcov(x32, x32 .+ 1.0f0), 1) == N
-        @test size(runcor(x32, x32 .+ 1.0f0), 1) == N
+        @test size(runacf(x32), 1) == N
+        @test valid(runcov(x32, x32 .+ 1.0f0))
+        @test valid(runcor(x32, x32 .+ 1.0f0))
         for f in (psar, donch, aroon)
-            @test size(f(Float32.([h l])), 1) == N
+            @test valid(f(h32, l32))
         end
         for f in (tr, atr, adx, wpr, cci, stoch, smi, keltner, ichimoku)
-            @test size(f(Float32.([h l x])), 1) == N
+            @test valid(f(h32, l32, x32))
         end
-        @test size(heikinashi(Float32.([x h l x])), 1) == N
-        @test size(vwma(Float32.([x v])), 1) == N
-        @test size(vwap(Float32.([x v])), 1) == N
+        @test valid(heikinashi(x32, h32, l32, x32))
+        @test valid(vwma(x32, v32))
+        @test valid(vwap(x32, v32))
     end
 
     @testset "Int input" begin
         xi = round.(Int, x)
-        for f in (sma, ema, wma, diffn, wilder_sum, runquantile, maxima, minima, renko,
-            momentum, roc, macd, rsi, bbands, mlr, mlr_bands)
-            @test size(f(xi), 1) == N
+        for f in (sma, ema, wma, diffn, wilder_sum, runsum, runquantile, maxima, minima,
+            renko, momentum, roc, macd, rsi, bbands, mlr, mlr_bands)
+            @test valid(f(xi))
         end
-        @test size(runfun(xi, mean; n = 5), 1) == N
+        @test valid(runfun(xi, mean; n = 5))
     end
 
     @testset "runfun" begin
@@ -47,16 +48,16 @@
     end
 
     @testset "vwap" begin
-        @test vwap([x v]) ≈ cumsum(x .* v) ./ cumsum(v)
+        @test vwap(x, v) ≈ cumsum(x .* v) ./ cumsum(v)
     end
 
     @testset "aroon" begin
         rising = collect(1.0:N)  # the high is always the current bar, the low n bars ago
-        tmp = aroon([rising rising .- 0.5]; n = 25)
-        @test all(isnan, tmp[1:25, :])
-        @test all(tmp[26:end, 1] .== 100.0)
-        @test all(tmp[26:end, 2] .== 0.0)
-        @test all(tmp[26:end, 3] .== 100.0)
+        tmp = aroon(rising, rising .- 0.5; n = 25)
+        @test all(isnan, tmp.up[1:25])
+        @test all(tmp.up[26:end] .== 100.0)
+        @test all(tmp.down[26:end] .== 0.0)
+        @test all(tmp.osc[26:end] .== 100.0)
     end
 
     @testset "alma" begin
@@ -67,14 +68,18 @@
     end
 
     @testset "ichimoku default periods" begin
-        @test isequal(ichimoku([h l x])[:, 1], donch([h l]; n = 9)[:, 2])
+        @test isequal(ichimoku(h, l, x).tenkan, donch(h, l; n = 9).mid)
     end
 
     @testset "bbands forwards ma keywords" begin
-        @test isequal(
-            bbands(x; ma = ema, wilder = true)[:, 2],
-            ema(x; n = 10, wilder = true),
-        )
+        @test isequal(bbands(x; ma = ema, wilder = true).mid, ema(x; n = 10, wilder = true))
+    end
+
+    @testset "kama with leading NaN" begin
+        # seeded with the mean of the first n valid values, then recursed from there
+        tmp = kama([NaN; x])
+        @test all(isnan, tmp[1:10])
+        @test all(!isnan, tmp[11:end])
     end
 
     @testset "_acf" begin

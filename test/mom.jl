@@ -1,77 +1,32 @@
 @testset "Momentum" begin
     Random.seed!(SEED)
-    @testset "Array" begin
-        x = cumsum(randn(N))     # close
-        Y = cumsum(randn(N, 2), dims = 1)  # high-low
-        Z = cumsum(randn(N, 3), dims = 1)  # high-low-close
-        Z4 = cumsum(randn(N, 4), dims = 1)  # open-high-low-close
-        tmp = aroon(Y)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 3
-        @test sum(isnan.(tmp)) != N
-        tmp = donch(Y)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 3
-        @test sum(isnan.(tmp)) != N
-        tmp = ichimoku(Z)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 5
-        @test sum(isnan.(tmp)) != N
-        tmp = momentum(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = roc(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = macd(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 3
-        @test sum(isnan.(tmp)) != N
-        tmp = rsi(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = adx(Z)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 3
-        @test sum(isnan.(tmp)) != N
-        tmp = adx(Z, wilder = true)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 3
-        @test sum(isnan.(tmp)) != N
-        tmp = heikinashi(Z4)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 4
-        @test sum(isnan.(tmp)) != N
-        tmp = psar(Y)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = kst(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = wpr(Z)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = cci(Z)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = stoch(Z, kind = :fast)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 2
-        @test sum(isnan.(tmp)) != N
-        tmp = stoch(Z, kind = :slow)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 2
-        @test sum(isnan.(tmp)) != N
-        tmp = smi(Z)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 2
-        @test sum(isnan.(tmp)) != N
+    c = cumsum(randn(N))
+    o = [c[1]; c[1:(end-1)]]
+    h = max.(o, c) .+ rand(N)
+    l = min.(o, c) .- rand(N)
+    for f in (momentum, roc, rsi, kst)
+        @test valid(f(c))
     end
+    @test valid(psar(h, l))
+    @test valid(wpr(h, l, c))
+    @test valid(cci(h, l, c))
+    for (tmp, names) in (
+        (aroon(h, l), (:up, :down, :osc)),
+        (donch(h, l), (:lower, :mid, :upper)),
+        (ichimoku(h, l, c), (:tenkan, :kijun, :senkou_a, :senkou_b, :chikou)),
+        (macd(c), (:macd, :signal, :histogram)),
+        (adx(h, l, c), (:di_plus, :di_minus, :adx)),
+        (adx(h, l, c; wilder = true), (:di_plus, :di_minus, :adx)),
+        (heikinashi(o, h, l, c), (:open, :high, :low, :close)),
+        (stoch(h, l, c; kind = :fast), (:k, :d)),
+        (stoch(h, l, c; kind = :slow), (:k, :d)),
+        (smi(h, l, c), (:smi, :signal)),
+    )
+        @test keys(tmp) == names
+        @test valid(tmp)
+    end
+    @test @inferred(macd(c)) isa NamedTuple
+    @test @inferred(adx(h, l, c)) isa NamedTuple
+    @test @inferred(stoch(h, l, c)) isa NamedTuple
+    @test_throws DimensionMismatch stoch(h, l, c[1:(end-1)])
 end

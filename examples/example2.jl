@@ -11,7 +11,6 @@ Close = 100.0 .+ cumsum(randn(n))
 Open = [Close[1]; Close[1:(end-1)]]
 High = max.(Open, Close) .+ rand(n)
 Low = min.(Open, Close) .- rand(n)
-HLC = [High Low Close]
 
 subplot(411)
 plot(t, Close, lw = 2, c = "k", label = "Price")
@@ -29,14 +28,14 @@ grid(ls = "-", c = [0.8, 0.8, 0.8])
 legend(loc = "best", frameon = false)
 
 subplot(413)
-plot(t, wpr(HLC), c = [1, 0.5, 0], label = "Williams %R")
+plot(t, wpr(High, Low, Close), c = [1, 0.5, 0], label = "Williams %R")
 plot([t[1], t[end]], [-20, -20], c = "r", ls = "--")
 plot([t[1], t[end]], [-80, -80], c = "g", ls = "--")
 grid(ls = "-", c = [0.8, 0.8, 0.8])
 legend(loc = "best", frameon = false)
 
 subplot(414)
-plot(t, cci(HLC), c = "c", label = "CCI")
+plot(t, cci(High, Low, Close), c = "c", label = "CCI")
 plot([t[1], t[end]], [-100, -100], c = "g", ls = "--")
 plot([t[1], t[end]], [100, 100], c = "r", ls = "--")
 grid(ls = "-", c = [0.8, 0.8, 0.8])

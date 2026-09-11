@@ -1,69 +1,17 @@
 # moving average functions
 @testset "Moving Averages" begin
     Random.seed!(SEED)
-    @testset "Array" begin
-        x = cumsum(randn(N))
-        X = cumsum(randn(N, 2), dims = 1)
-        tmp = sma(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = mama(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 2
-        @test sum(isnan.(tmp)) != N
-        tmp = ema(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = wma(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = hma(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = trima(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = mma(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = tema(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = dema(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = swma(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = kama(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = alma(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = zlema(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        @test sum(isnan.(tmp)) != N
-        tmp = vwma(X)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        tmp = vwap(X)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
-        tmp = hama(x)
-        @test size(tmp, 1) == N
-        @test size(tmp, 2) == 1
+    x = cumsum(randn(N))
+    v = rand(N) .* 1000
+    for f in (sma, ema, wma, hma, trima, mma, tema, dema, swma, kama, alma, zlema, hama)
+        @test valid(f(x))
     end
+    tmp = mama(x)
+    @test keys(tmp) == (:mama, :fama)
+    @test valid(tmp)
+    @test @inferred(mama(x)) isa NamedTuple
+    @test valid(vwma(x, v))
+    @test valid(vwap(x, v))
+    @test_throws DimensionMismatch vwma(x, v[1:(end-1)])
+    @test sma(x; n = 5)[5] ≈ mean(x[1:5])
 end

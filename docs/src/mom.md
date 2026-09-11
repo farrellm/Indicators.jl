@@ -13,11 +13,12 @@ l = min.(o, c) .- abs.(randn(N))
 
 m = macd(c)
 r = rsi(c)
-p = psar([h l])
+p = psar(h, l)
 
 f1 = plot(c, linewidth=3, color=:black, label="Close")
 scatter!(p, color=:blue, markersize=2, label="PSAR")
-f2 = plot(m, linewidth=2, color=[:green :cyan :orange], label=["MACD" "Signal" "Histogram"])
+f2 = plot([m.macd m.signal m.histogram], linewidth=2, color=[:green :cyan :orange],
+          label=["MACD" "Signal" "Histogram"])
 hline!([0.0], linestyle=:dash, color=:grey, label="")
 f3 = plot(r, linewidth=2, color=:gold, label="RSI")
 hline!([20, 80], linestyle=:dot, color=[:green, :red], label="")

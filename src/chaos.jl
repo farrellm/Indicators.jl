@@ -67,34 +67,33 @@ end
 
 """
 ```
-rsrange(x::Array{T}; n::Int=100, cumulative::Bool=false, intercept::Bool=true)
+rsrange(x::AbstractVector{<:Real}; n::Int=100, cumulative::Bool=false)::Vector{Float64}
 ```
 
 Compute the rescaled range of a time series
 """
 function rsrange(
-    x::AbstractArray{T};
+    x::AbstractVector{<:Real};
     n::Int = 100,
     cumulative::Bool = false,
-    intercept::Bool = true,
-) where {T<:Real}
-    @assert size(x, 1) >= n
+)::Vector{Float64}
+    @assert length(x) >= n
     return runfun(x, estimate_rsrange; n = n, cumulative = cumulative)
 end
 
 """
 ```
-hurst(x::Array{T}; n::Int=100, cumulative::Bool=false, intercept::Bool=false)
+hurst(x::AbstractVector{<:Real}; n::Int=100, cumulative::Bool=false, intercept::Bool=false)::Vector{Float64}
 ```
 
 Compute the Hurst exponent of a time series
 """
 function hurst(
-    x::AbstractArray{T};
+    x::AbstractVector{<:Real};
     n::Int = 100,
     cumulative::Bool = false,
     intercept::Bool = false,
-) where {T<:Real}
-    @assert size(x, 1) >= n
+)::Vector{Float64}
+    @assert length(x) >= n
     return runfun(x, estimate_hurst; n = n, cumulative = cumulative, intercept = intercept)
 end
