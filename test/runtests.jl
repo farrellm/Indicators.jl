@@ -28,3 +28,9 @@ TEST_FILES = [
 @inbounds for testfile in TEST_FILES
     include(testfile)
 end
+
+# JET can lag pre-release Julia; the checks are the same on every
+# released version, so skipping them there loses nothing.
+if isempty(VERSION.prerelease)
+    include("jet.jl")
+end
