@@ -2,9 +2,9 @@
     Random.seed!(SEED)
     @testset "Array" begin
         x = cumsum(randn(N))     # close
-        Y = cumsum(randn(N, 2), dims=1)  # high-low
-        Z = cumsum(randn(N, 3), dims=1)  # high-low-close
-        Z4 = cumsum(randn(N, 4), dims=1)  # open-high-low-close
+        Y = cumsum(randn(N, 2), dims = 1)  # high-low
+        Z = cumsum(randn(N, 3), dims = 1)  # high-low-close
+        Z4 = cumsum(randn(N, 4), dims = 1)  # open-high-low-close
         tmp = aroon(Y)
         @test size(tmp, 1) == N
         @test size(tmp, 2) == 3
@@ -37,7 +37,7 @@
         @test size(tmp, 1) == N
         @test size(tmp, 2) == 3
         @test sum(isnan.(tmp)) != N
-        tmp = adx(Z, wilder=true)
+        tmp = adx(Z, wilder = true)
         @test size(tmp, 1) == N
         @test size(tmp, 2) == 3
         @test sum(isnan.(tmp)) != N
@@ -61,11 +61,11 @@
         @test size(tmp, 1) == N
         @test size(tmp, 2) == 1
         @test sum(isnan.(tmp)) != N
-        tmp = stoch(Z, kind=:fast)
+        tmp = stoch(Z, kind = :fast)
         @test size(tmp, 1) == N
         @test size(tmp, 2) == 2
         @test sum(isnan.(tmp)) != N
-        tmp = stoch(Z, kind=:slow)
+        tmp = stoch(Z, kind = :slow)
         @test size(tmp, 1) == N
         @test size(tmp, 2) == 2
         @test sum(isnan.(tmp)) != N
@@ -76,9 +76,9 @@
     end
     @testset "Temporal" begin
         x = TS(cumsum(randn(N)))
-        Y = TS(cumsum(randn(N, 2), dims=1))
-        Z = TS(cumsum(randn(N, 3), dims=1))
-        Z4 = TS(cumsum(randn(N, 4), dims=1))
+        Y = TS(cumsum(randn(N, 2), dims = 1))
+        Z = TS(cumsum(randn(N, 3), dims = 1))
+        Z4 = TS(cumsum(randn(N, 4), dims = 1))
         # momentum function
         tmp = aroon(Y)
         @test size(tmp, 1) == N
@@ -104,7 +104,7 @@
         tmp = adx(Z)
         @test size(tmp, 1) == N
         @test size(tmp, 2) == 3
-        tmp = adx(Z, wilder=true)
+        tmp = adx(Z, wilder = true)
         @test size(tmp, 1) == N
         @test size(tmp, 2) == 3
         tmp = heikinashi(Z4)
@@ -122,10 +122,10 @@
         tmp = cci(Z)
         @test size(tmp, 1) == N
         @test size(tmp, 2) == 1
-        tmp = stoch(Z, kind=:fast)
+        tmp = stoch(Z, kind = :fast)
         @test size(tmp, 1) == N
         @test size(tmp, 2) == 2
-        tmp = stoch(Z, kind=:slow)
+        tmp = stoch(Z, kind = :slow)
         @test size(tmp, 1) == N
         @test size(tmp, 2) == 2
         tmp = smi(Z)

@@ -10,4 +10,3 @@
         @test !any(cxo .* cxu)  # ensure crossovers and crossunders never coincide
     end
 end
-
