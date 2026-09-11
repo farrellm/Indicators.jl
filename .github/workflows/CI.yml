@@ -56,9 +56,6 @@ jobs:
           fail_ci_if_error: false
   format:
     name: Format check
-    # Disabled: the tree has not been JuliaFormatter-formatted yet. To enable,
-    # add a .JuliaFormatter.toml, format src/ and test/, and remove this line.
-    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
