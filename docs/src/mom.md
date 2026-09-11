@@ -3,10 +3,16 @@
 ## Example
 
 ```@example
-using Temporal, Indicators, Plots
-X = quandl("CHRIS/CME_CL1", rows=252, sort='d')
+using Temporal, Indicators, Plots, Random
+Random.seed!(1)
+N = 252
+c = 100 .+ cumsum(randn(N))
+o = [c[1]; c[1:end-1]]
+h = max.(o, c) .+ abs.(randn(N))
+l = min.(o, c) .- abs.(randn(N))
+X = TS([o h l c])
+X.fields = [:Open, :High, :Low, :Close]
 x = cl(X)
-x.fields[1] = :Crude
 
 m = macd(x)
 r = rsi(x)

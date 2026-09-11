@@ -2,10 +2,10 @@
 
 # Example
 ```@example
-using Temporal, Indicators, Plots
-X = quandl("CHRIS/CME_CL1", rows=252, sort='d')
-x = cl(X)
-x.fields[1] = :Crude
+using Temporal, Indicators, Plots, Random
+Random.seed!(1)
+x = TS(100 .+ cumsum(randn(252)))
+x.fields[1] = :Price
 
 r = [rsrange(x, n=60) rsrange(x, n=60, cumulative=true)]
 r.fields = Symbol.(["Rolling R/S", "Cumulative R/S"])

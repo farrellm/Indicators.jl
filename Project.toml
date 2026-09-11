@@ -1,6 +1,6 @@
 name = "Indicators"
 uuid = "70c4c096-89a6-5ec6-8236-da8aa3bd86fd"
-authors = ["Jacob Amos <jamos125@gmail.com>"]
+authors = ["Jacob Amos <jamos125@gmail.com>", "Matthew Farrell <farrellm@alum.mit.edu>"]
 version = "0.8.2"
 
 [deps]
@@ -11,4 +11,4 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [compat]
 Temporal = "^0.8"
-julia = "^1.2"
+julia = "1.10"

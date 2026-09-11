@@ -1,9 +1,9 @@
-using Documenter, Indicators, Plots, GLMakie
+using Documenter, Indicators
 
 makedocs(
     modules = [Indicators],
-    sitename = "Indicators",
-    authors="Jacob Amos",
+    sitename = "Indicators.jl",
+    authors="Jacob Amos, Matthew Farrell",
     pages=["Home"=>"index.md",
            "Conventional" => ["Moving Averages" => "ma.md",
                               "Momentum Indicators" => "mom.md",
@@ -12,13 +12,13 @@ makedocs(
                         "Trendlines" => "trendy.md",
                         "Chaos" => "chaos.md",
                         "Patterns" => "patterns.md"]],
-    format = Documenter.HTML(),
+    format = Documenter.HTML(
+        canonical = "https://farrellm.github.io/Indicators.jl",
+        edit_link = "master",
+    ),
     doctest=false,
-    clean=true,
+    checkdocs=:exports,
 )
 
-deploydocs(deps=Deps.pip("mkdocs", "python-markdown-math"),
-           repo="github.com/dysonance/Indicators.jl.git",
-           devbranch="master",
-           devurl="dev",
-           versions=["stable" => "v^", "v#.#", "dev" => "dev"])
+deploydocs(repo="github.com/farrellm/Indicators.jl",
+           devbranch="master")
